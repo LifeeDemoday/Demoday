@@ -9,7 +9,8 @@ const app = express();
 app.use(expressMongoDb('mongodb://localhost/client'));
 app.use(bodyParser.json());
 
-function fichaCadastro (dados){
+
+function fichaCadastro(dados){
     let usuario = {
         nome: dados.nome,
         email: dados.email,
@@ -19,7 +20,7 @@ function fichaCadastro (dados){
     return usuario;
 }
 
-function fichaLogin (dados){
+function fichaLogin(dados){
     let usuario = {
         email: dados.email,
         senha: dados .senha
@@ -28,59 +29,75 @@ function fichaLogin (dados){
     return usuario;
 }
 
+function validarEmail(email) {
+    if(email.indexOf('@') == -1){
+        res.status(400).send({mensagem: 'Email inválido'});
+        return false;
+    }
+    return true
+}
+
+function validarSenha(senha){
+    let senhaValida = /^[a-zA-Z0-9]{8,}$ /; //Cria uma RegExp para a senha
+    return senhaValida.test(senha)
+}
+
 app.post('/entrada', (req, res) => {
     let cadastro = req.body.cadastro;
-    
-    let novoUsuario =  ficha(req.body);
 
-    if(req.body.email.indexOf('@') == -1){
-        res.status(400).send({mensagem: 'Email inválido'});
-        return;
+    // Executa o if caso o atributo cadastro, que é booleano, for verdadeiro, caso falso, executa o else 
+    if (cadastro) {
+        let novoUsuario =  fichaCadastro(req.body); // Garante que o objeto está formatado corretamente
+
+        // Valida o email 
+        if(validarEmail(novoUsuario.email)){
+
+            // Valida a senha
+            if(validarSenha(novoUsuario.senha)){
+
+                // Procura um registro do email, caso não encontre, registra o usuário, se encontrar, não o registra 
+                req.db.collection('usuarios').find(novoUsuario.email).toArray((error, data) => {
+                    if(error || !data){
+                        req.db.collection('usuarios').insert(novoUsuario, (err) =>{
+                            if(err){
+                                res.status(500).send('Erro ao acessar o servidor.');
+                                return;
+                            }
+                        }
+                    )}
+                    else{
+                        res.status(409).send('Esse email já foi cadastrado, deseja recuperar sua senha?');
+                    }
+
+                    res.send(req.body);
+                });
+            }
+            else{
+                req.status(400).send('Senha inválida');
+            }
+        }
+        else{
+            req.status(400).send('Email inválido');
+        }
+    }
+    else{
+        let usuarioEntrando = fichaLogin(req.body);
+        req.db.collection('usuarios').findOne(usuarioEntrando, (error, data) =>{
+            if(error || !data){
+                res.status(401).send('Email ou senha não encontrados, tente novamente');
+            }
+            else{
+                res.send(data)
+            }
+        });
     }
     
-    req.db.collection('usuarios').insert(novoUsuario, (error) =>{
-        if(error){
-            res.status(500).send('Error ao acessar o servidor.');
-            return;
-        }
-
-        res.send(req.body);
-    });
-
-});
-  
-/*
-app.post('/entrada', (req, res) => {
-
-     if(cadastro){
-
-         let novoUsuario = ficha(req.body);
-
-        if(req.body.email.indexOf('@') == -1){
-            res.status(400).send({mensagem: 'Email inválido'});
-            return;
-        }
-    
-         req.db.collection('usuarios').insert(novoUsuario, (error) =>{
-             if(error){
-                 res.status(500).send('Error ao acessar o servidor.');
-                 return;
-             }
-    
-             res.send(req.body);
-         });
-    }else{
-        let usuario = fichaLogin(req.body);
-
-        req.db.collection('usuarios') //levar a pagina do perfil ou inicio
-    }
 });
 
-*/
 app.get('/Usuarios', (req, res) => {
     req.db.collection('usuarios').find().toArray((error, data) =>{
         if(error){
-            res.status(500).send('Erro ao acessar o banco de body');
+            res.status(500).send('Erro ao acessar o banco de dados');
             return;
         }
         res.send(data);
@@ -95,7 +112,7 @@ app.get("/buscar/:id", (req, res) => {
     req.db.collection('usuarios').findOne(query, (error, data) => {
 
         if(error){
-            res.status(500).send('ususario não existe');
+            res.status(500).send('usuário não existe');
             return;
         }
 
@@ -116,7 +133,7 @@ app.get("/Buscar/nome/:nome", (req, res) => {
     req.db.collection('usuarios').find(query).toArray((error, data) => {
 
         if(error){
-            res.status(500).send('ususario não existe');
+            res.status(500).send('usuário não existe');
             return;
         }
 
