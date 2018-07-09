@@ -24,7 +24,7 @@ class App extends Component {
     render() {
         return (
             <div className="app">
-                <Controle login={this.irParaLogin} cadastro={this.irParaCadastro}/>
+                <Controle login={this.irParaLogin} cadastro={this.irParaCadastro} pressionado={this.state.atual}/>
                 <Formulario tela={this.state.atual}/>
             </div>
         );

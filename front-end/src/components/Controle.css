@@ -1,5 +1,24 @@
 .controle{
     display: flex;
     width: 50vw;
-    height: 50vh;
+    height: 20vh;
+}
+
+.controle button{
+    width: 50%;
+    height: 100%;
+    background-color: rgba(2, 170, 2, 0.966);
+    border: 2px;
+    font-size: 40px;
+    border-radius: 5px;  
+}
+
+.controle button.ativado{
+    background-color: rgba(0, 88, 0, 0.966);
+    border: 1px solid;
+    transform: scale(0.98);
+}
+
+.controle button.desativado{
+    background-color: rgba(2, 170, 2, 0.966);
 }

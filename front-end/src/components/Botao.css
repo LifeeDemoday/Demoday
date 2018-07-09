@@ -1,5 +1,8 @@
-button{
-    background-color: lightgray;
-    width: 50%;
-    height: 50%;
+.ativado{
+    background-color: rgba(2, 170, 255, 0.966);
+    border: 15px;
+}
+
+.desativado{
+    background-color: rgba(2, 170, 2, 0.966);
 }

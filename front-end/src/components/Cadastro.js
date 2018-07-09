@@ -5,7 +5,7 @@ import Botao from './Botao';
 class Cadastro extends Component {
   render() {
     return (
-        <div className="login">
+        <div className="cadastro">
             <input type="text" placeholder="Nome"/>
             <input type="email" placeholder="E-mail"/>
             <input type="password" placeholder="Senha"/>
