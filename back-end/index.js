@@ -63,13 +63,14 @@ app.post('/entrada', (req, res) => {
                                 res.status(500).send('Erro ao acessar o servidor.');
                                 return;
                             }
+                            else{
+                                res.send('Cadastrado com sucesso');
+                            }
                         }
                     )}
                     else{
                         res.status(409).send('Esse email já foi cadastrado, deseja recuperar sua senha?');
                     }
-
-                    res.send(req.body);
                 });
             }
             else{

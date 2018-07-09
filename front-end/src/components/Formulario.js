@@ -5,7 +5,7 @@ import './Formulario.css';
 
 class Formulario extends Component {
     render() {
-        if (this.props.tela == 'cadastro') {
+        if (this.props.tela === 'cadastro') {
             return (
                 <Cadastro />
             );
