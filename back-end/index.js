@@ -8,6 +8,7 @@ const app = express();
 
 app.use(expressMongoDb('mongodb://localhost/client'));
 app.use(bodyParser.json());
+app.use(cors());
 
 
 function fichaCadastro(dados){
@@ -31,7 +32,6 @@ function fichaLogin(dados){
 
 function validarEmail(email) {
     if(email.indexOf('@') == -1){
-        res.status(400).send({mensagem: 'Email inválido'});
         return false;
     }
     return true
@@ -39,25 +39,25 @@ function validarEmail(email) {
 
 function validarSenha(senha){
     let senhaValida = /^[a-zA-Z0-9]{8,}$ /; //Cria uma RegExp para a senha
+    senhaValida.compile();
     return senhaValida.test(senha)
 }
 
 app.post('/entrada', (req, res) => {
     let cadastro = req.body.cadastro;
-
     // Executa o if caso o atributo cadastro, que é booleano, for verdadeiro, caso falso, executa o else 
     if (cadastro) {
         let novoUsuario =  fichaCadastro(req.body); // Garante que o objeto está formatado corretamente
-
         // Valida o email 
         if(validarEmail(novoUsuario.email)){
-
             // Valida a senha
             if(validarSenha(novoUsuario.senha)){
-
+                let email = {
+                    "email": novoUsuario.email
+                };
                 // Procura um registro do email, caso não encontre, registra o usuário, se encontrar, não o registra 
-                req.db.collection('usuarios').find(novoUsuario.email).toArray((error, data) => {
-                    if(error || !data){
+                req.db.collection('usuarios').find(email).toArray((error, data) => {
+                    if(error || data === []){
                         req.db.collection('usuarios').insert(novoUsuario, (err) =>{
                             if(err){
                                 res.status(500).send('Erro ao acessar o servidor.');
@@ -69,16 +69,16 @@ app.post('/entrada', (req, res) => {
                         }
                     )}
                     else{
-                        res.status(409).send('Esse email já foi cadastrado, deseja recuperar sua senha?');
+                        res.status(409).send(data);
                     }
                 });
             }
             else{
-                req.status(400).send('Senha inválida');
+                res.status(400).send('Falhou ' + validarSenha(novoUsuario.senha));
             }
         }
         else{
-            req.status(400).send('Email inválido');
+            res.status(400).send('Email inválido');
         }
     }
     else{
@@ -95,7 +95,7 @@ app.post('/entrada', (req, res) => {
     
 });
 
-app.get('/Usuarios', (req, res) => {
+app.get('/usuarios', (req, res) => {
     req.db.collection('usuarios').find().toArray((error, data) =>{
         if(error){
             res.status(500).send('Erro ao acessar o banco de dados');
@@ -126,7 +126,7 @@ app.get("/buscar/:id", (req, res) => {
     });
 });
 
-app.get("/Buscar/nome/:nome", (req, res) => {
+app.get("/buscar/nome/:nome", (req, res) => {
     let query = {
         nome: req.params.nome
     };
@@ -138,7 +138,7 @@ app.get("/Buscar/nome/:nome", (req, res) => {
             return;
         }
 
-        if(!data){
+        if(data === []){
             res.status(404).send('não encontrado');
             return;
         }
@@ -147,15 +147,17 @@ app.get("/Buscar/nome/:nome", (req, res) => {
     });
 });
 
-app.put("/Auto/:id", (req, res) => {
+app.put("/atualizar/:id", (req, res) => {
     let query = {
         _id: ObjectID(req.params.id)
     };
 
-    req.db.collection('usuarios').updateOne(query, autoUsuario, (error, data) => {
+    let atualizacaoUsuario = fichaCadastro(req.body);
+
+    req.db.collection('usuarios').updateOne(query, atualizacaoUsuario, (error, data) => {
         
         if(error){
-            res.status(500).send('Error ao atualizar ususario');
+            res.status(500).send('Erro ao atualizar ususario');
             return;
         }
 
@@ -164,7 +166,7 @@ app.put("/Auto/:id", (req, res) => {
 });
 
 
-app.delete("/Excluir/:id", (req, res) => {
+app.delete("/excluir/:id", (req, res) => {
     let query = {
         _id: ObjectID(req.params.id)
     };
@@ -172,7 +174,7 @@ app.delete("/Excluir/:id", (req, res) => {
     req.db.collection('usuarios').deleteOne(query, (error, data) => {
         
         if(error){
-            res.status(500).send('Error ao deletar ususario');
+            res.status(500).send('Erro ao deletar ususario');
             return;
         }
 
@@ -180,4 +182,4 @@ app.delete("/Excluir/:id", (req, res) => {
     });
 });
 
-app.listen(3000);
+app.listen(3001);

@@ -17,7 +17,7 @@ class Cadastro extends Component {
             "cadastro": cadastro,
             "senha": senha 
         };
-        fetch('/entrada', {
+        fetch('localhost:3001/entrada', {
             headers:{
                 "Content-Type": "application/json"
             },
