@@ -91,65 +91,12 @@ app.post('/mensagens/nova-mensagem/:id', (req, res) => {
     }); 
 });
 
-app.get('/mensagens/:id', (req, res) => {
-
-    // Cria uma lista com todos os IDs das pessoas com quem o usuario já conversou
-    let pessoas = [];
-
-    // Cria uma lista com as conversas
-    let conversas = [];
+app.get('/mensagens/:usuario/:alvo', (req, res) => {
     let query = {
-        _id: ObjectID(req.params.id)
+        _id: [req.params.id, req.params.alvo].sort
     };
 
-    req.db.collection('usuarios').find(query).toArray((error, data) =>{
-        if(error){
-            res.status(500).send('Erro ao acessar o banco de dados');
-            return;
-        }
-        pessoas = data.conversas; // Atualiza a lista dos IDs
-        console.log('data: ' + data); 
-        console.log('pessoas: ' + pessoas);
-    });
-    for (let idOutraPessoa of pessoas) {
-        
-        query = {
-            pessoas: [req.params.id, idOutraPessoa].sort()
-        };
-
-        req.db.collection('conversas').findOne(query, (error, data) => {
-
-            if(error){
-                res.status(500).send('usuário não existe');
-                return;
-            }
-
-            if(!data){
-                res.status(404).send('não encontrado');
-                return;
-            }
-
-            conversas.push(data); // Atualiza a lista das conversas
-            console.log('conversas: ' + conversas);
-        });
-    }
-    res.send(conversas);
-});
-
-app.get('/mensagens/:id/:nome', (req, res) => {
-    let queryID = {
-        _id: ObjectID(req.params.id)
-    };
-
-    let queryNome = {
-        nome: req.params.nome
-    };
-
-    let usuarios = [];
-    let usuariosID = [];
-
-    req.db.collection('usuarios').find(queryNome).toArray((error, data) => {
-
+    req.db.collection('conversas').findOne(query, (error, data) => {
         if(error){
             res.status(500).send('Erro ao acessar o banco de dados');
             return;
@@ -159,12 +106,8 @@ app.get('/mensagens/:id/:nome', (req, res) => {
             res.status(404).send('Usuário não existe');
             return;
         }
-
-        usuarios = data;
+        console.log(data);
+        res.send(data);
     });
-
-    for (const pessoa of usuarios) {
-        usuariosID.push(pessoa._id);
-    }
 });
 app.listen(3002);
