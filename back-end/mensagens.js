@@ -10,16 +10,19 @@ app.use(expressMongoDb('mongodb://localhost/client'));
 app.use(bodyParser.json());
 app.use(cors());
 
+function mensagens(dados){
+    return {
+        nome: dados.nome,
+        horario: dados.horario,
+        mensagem: dados.mensagem
+    }
+}
 
 function formatoMensagem(dados, id) {
     let mensagem = {
         pessoas: [dados.pessoa, id].sort(),
         horaUltimaMensagem: dados.horario,
-        mensagens: [{
-            nome: dados.nome,
-            horario: dados.horario,
-            mensagem: dados.mensagem
-        }]
+        mensagens: [mensagens(dados)]
     }
     return mensagem
 }
@@ -54,15 +57,38 @@ function atualizarListaDeConversas(req, res, id, id2) {
 
 app.post('/mensagens/nova-mensagem/:id', (req, res) => {
     let mensagem = formatoMensagem(req.body, req.params.id);
-    req.db.collection('conversas').insert(mensagem, (error) => {
-        if(error){
+    req.db.collection('usuarios').findOne({_id: ObjectID(req.params.id)}, (error, data) => {
+        if (error) {
             res.status(500).send('Erro ao acessar o banco de dados');
             return
         }
-    });
-    atualizarListaDeConversas(req, res, req.params.id, req.body.pessoa);
-    atualizarListaDeConversas(req, res, req.body.pessoa, req.params.id);
-
+        if(!data.conversas.includes(req.body.pessoa)){
+            req.db.collection('conversas').insert(mensagem, (error) => {
+                if(error){
+                    res.status(500).send('Erro ao acessar o banco de dados');
+                    return
+                }
+            });
+            atualizarListaDeConversas(req, res, req.params.id, req.body.pessoa);
+            atualizarListaDeConversas(req, res, req.body.pessoa, req.params.id);
+        }
+        else{
+            req.db.collection('conversas').findOne({pessoas: [req.body.pessoa, req.params.id].sort}, (error, data) => {
+                if (error) {
+                    res.status(500).send('Erro ao acessar o banco de dados');
+                    return
+                }
+                data.horaUltimaMensagem = req.body.horario;
+                data.mensagens.push(mensagens(req.body));
+                req.db.collection('conversas').updateOne({pessoas: [req.body.pessoa, req.params.id].sort}, data, (error, data) => {
+                    if(error){
+                        res.status(500).send('Erro ao atualizar usuario');
+                        return;
+                    }
+                });
+            });
+        }
+    }); 
 });
 
 app.get('/mensagens/:id', (req, res) => {

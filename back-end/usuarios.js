@@ -50,6 +50,7 @@ function validarSenha(senha){
 
 app.post('/entrada', (req, res) => {
     let cadastro = req.body.cadastro;
+    
     // Executa o if caso o atributo cadastro, que é booleano, for verdadeiro, caso falso, executa o else 
     if (cadastro) {
         let novoUsuario =  fichaCadastro(req.body); // Garante que o objeto está formatado corretamente
