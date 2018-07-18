@@ -18,6 +18,7 @@ function fichaCadastro(dados){
         nutricionista: dados.nutricionista,
         edFisica: dados.edFisica,
         certificacao: dados.certificacao,
+        objetivo: dados.objetivo,
         senha: dados.senha,
         conversas: dados.conversas
     }
@@ -93,8 +94,8 @@ app.post('/entrada', (req, res) => {
     }
     else{
         let usuarioEntrando = fichaLogin(req.body);
-        req.db.collection('usuarios').findOne(usuarioEntrando, (error, data) =>{
-            if(error){
+        req.db.collection('usuarios').findOne(usuarioEntrando, (err, data) =>{
+            if(err){
                 res.status(500).send('Erro ao acessar o banco de dados');
             }
             if(!data){
@@ -109,8 +110,8 @@ app.post('/entrada', (req, res) => {
 });
 
 app.get('/usuarios', (req, res) => {
-    req.db.collection('usuarios').find().toArray((error, data) =>{
-        if(error){
+    req.db.collection('usuarios').find().toArray((err, data) =>{
+        if(err){
             res.status(500).send('Erro ao acessar o banco de dados');
             return;
         }
@@ -118,14 +119,14 @@ app.get('/usuarios', (req, res) => {
     });
 });
 
-app.get("/buscar/:id", (req, res) => {
+app.get('/buscar/:id', (req, res) => {
     let query = {
         _id: ObjectID(req.params.id)
     };
 
-    req.db.collection('usuarios').findOne(query, (error, data) => {
+    req.db.collection('usuarios').findOne(query, (err, data) => {
 
-        if(error){
+        if(err){
             res.status(500).send('usuário não existe');
             return;
         }
@@ -139,14 +140,14 @@ app.get("/buscar/:id", (req, res) => {
     });
 });
 
-app.get("/buscar/nome/:nome", (req, res) => {
+app.get('/buscar/nome/:nome', (req, res) => {
     let query = {
         nome: req.params.nome
     };
 
-    req.db.collection('usuarios').find(query).toArray((error, data) => {
+    req.db.collection('usuarios').find(query).toArray((err, data) => {
 
-        if(error){
+        if(err){
             res.status(500).send('usuário não existe');
             return;
         }
@@ -160,14 +161,14 @@ app.get("/buscar/nome/:nome", (req, res) => {
     });
 });
 
-app.put("/atualizar/:id", (req, res) => {
+app.put('/atualizar/:id', (req, res) => {
     let query = {
         _id: ObjectID(req.params.id)
     };
 
     let atualizacaoUsuario = fichaCadastro(req.body);
 
-    req.db.collection('usuarios').updateOne(query, atualizacaoUsuario, (error, data) => {
+    req.db.collection('usuarios').updateOne(query, atualizacaoUsuario, (err, data) => {
         
         if(error){
             res.status(500).send('Erro ao atualizar usuario');
@@ -179,13 +180,13 @@ app.put("/atualizar/:id", (req, res) => {
 });
 
 
-app.delete("/excluir/:id", (req, res) => {
+app.delete('/excluir/:id', (req, res) => {
     let query = {
         _id: ObjectID(req.params.id)
     };
-    req.db.collection('usuarios').findOne(query, (error, data) => {
+    req.db.collection('usuarios').findOne(query, (err, data) => {
 
-        if(error){
+        if(err){
             res.status(500).send('usuário não existe');
             return;
         }
@@ -195,13 +196,13 @@ app.delete("/excluir/:id", (req, res) => {
             return;
         }
     });
-    req.db.collection('usuarios').deleteOne(query, (error, data) => {
+    req.db.collection('usuarios').deleteOne(query, (err, data) => {
         
-        if(error){
+        if(err){
             res.status(500).send('Erro ao deletar ususario');
             return;
         }
     });
 });
 
-app.listen(3001);
+app.listen(3000);
