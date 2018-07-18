@@ -20,7 +20,9 @@ function fichaCadastro(dados){
         certificacao: dados.certificacao,
         objetivo: dados.objetivo,
         senha: dados.senha,
-        conversas: dados.conversas
+        conversas: dados.conversas,
+        exercicios: [],
+        calorias: []
     }
 
     return usuario;

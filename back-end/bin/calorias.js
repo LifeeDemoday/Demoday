@@ -63,6 +63,14 @@ function calculoDeCalorias(objetivo, saldoDeCalorias, exercicios){
     }
 }
 
+function exercicio(dados) {
+    let exercicios = {
+        exercicio: dados.nome,
+        tempo: dados.tempo
+    };
+    return exercicios
+}
+
 app.post('/calorias/:id', (req, res) => {
     
     let caloria = calorias(req.body);
@@ -98,46 +106,6 @@ app.post('/addExercicios', (req, res) =>{
     });
 });
 
-app.put('autoCal/:id', (req, res) => {
-    let query = {
-        _id: ObjectID(req.params.id)
-    };
-    
-    if(exercicio){
-        
-        let cal = calorias(req.body);
-        
-        req.db.collection('calorias').updateOne(query, cal, (err, data) => {
-            
-            if(err){
-                res.status(500).send('Erro ao atualizar calorias');
-                return;
-            }
-            
-            res.send(data);
-        });
-    }
-});
-
-app.put('autoExercicio', (req, res) =>{
-    let query = {
-        _id: ObjectID(req.params.id)
-    };
-    
-    let exercicio = exercicios(req.body);
-    
-    req.db.colletion('exercicios').updateOne(query, exercicio, (err, data) =>{
-
-        if(err){
-            res.status(500).send('Erro ao atualizar exercicios');
-            return;
-        }
-
-        res.send(data);
-    })
-    
-});
-
 app.get('/exercicios', (req, res) => {
 
     req.db.collection('exercicios').find().toArray((error, data) =>{
@@ -168,6 +136,31 @@ app.get("/buscar/exercicio/:nome", (req, res) => {
         }
         
         res.send(data);
+    });
+});
+
+app.put('/atualizacao-diaria/:id', (req, res) => {
+    let query = {
+        _id: ObjectID(req.params.id)
+    };
+    req.db.collection('usuarios').findOne(query, (err, data) => {
+        if (err) {
+            res.status(500).send('Erro ao acessar o banco de dados');
+            return
+        }
+        let usuario = data;
+        for (let i in req.body.exercicios){
+            usuario.exercicios.push(exercicio(req.body.exercicios[i]));
+        }
+        usuario.calorias.push(req.body.calorias);
+        
+        req.db.collection('usuarios').updateOne(query, usuario, (err, data) => {
+            if (err) {
+                res.status(500).send('Erro ao acessar o banco de dados');
+                return
+            }
+            res.send('Atualizado com sucesso');
+        });
     });
 });
 
